@@ -5,239 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAL-SR-01</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <div class="top-line"></div>
-    
-    
-    <div class="container">
-        <div class="sidebar">
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('format')">
-                    <span class="section-title">Format</span>
-                    <span class="arrow">▶</span>
-                </div>
-                <div class="section-content" id="format">
-                    <div class="control-group">
-                        <label class="control-label">Width (px)</label>
-                        <input type="number" id="width" value="400" min="200" max="800">
+    <!-- Step 1: Landing with text and falling stones -->
+    <div id="step1" class="step active">
+        <div class="top-bar"></div>
+        <div class="intro-text">
+            <p>I live in an old apartment building.</p>
+            <p>I drilled a hole in my wall.</p>
+        </div>
+        <div class="falling-stones-container" id="fallingStones"></div>
+        <div class="bottom-bar"></div>
+    </div>
+
+    <!-- Step 2: Number creation workspace (0-9) -->
+    <div id="step2" class="step">
+        <div class="workspace">
+            <!-- Drill button (top left corner) -->
+            <button class="drill-button" id="drillButton">
+                <span class="drill-text">drill</span>
+            </button>
+
+            <!-- Center canvas area -->
+            <div class="canvas-area">
+                <button class="nav-arrow nav-arrow-left" onclick="changeNumber(-1)">‹</button>
+                <div class="canvas-wrapper">
+                    <div class="preview-canvas" id="previewCanvas">
+                        <canvas id="mainCanvas"></canvas>
+                        <svg id="stonesSvg" class="stones-svg"></svg>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label">Height (px)</label>
-                        <input type="number" id="height" value="600" min="300" max="1200">
-                    </div>
                 </div>
+                <button class="nav-arrow nav-arrow-right" onclick="changeNumber(1)">›</button>
             </div>
 
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('grid')">
-                    <span class="section-title">Grid</span>
-                    <span class="arrow">▶</span>
+            <!-- Right sidebar with view options -->
+            <div class="view-sidebar">
+                <div class="view-option" id="oneView" onclick="switchView('one')">
+                    <span>one</span>
                 </div>
-                <div class="section-content" id="grid">
-                    <div class="control-group">
-                        <label class="control-label">Color</label>
-                        <input type="color" class="color-input" id="gridColor" value="#cccccc">
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Columns</label>
-                        <div class="slider-container">
-                            <input type="range" id="columns" min="0" max="20" value="10">
-                            <span class="slider-value" id="columnsValue">10</span>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Rows</label>
-                        <div class="slider-container">
-                            <input type="range" id="rows" min="0" max="30" value="15">
-                            <span class="slider-value" id="rowsValue">15</span>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Type</label>
-                        <select id="gridType">
-                            <option value="line">Line</option>
-                            <option value="dotted">Dotted</option>
-                        </select>
-                    </div>
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="gridEnabled" checked>
-                            <span class="checkmark"></span>
-                            Enable Grid
-                        </label>
-                    </div>
+                <div class="view-divider"></div>
+                <div class="view-option" id="allView" onclick="switchView('all')">
+                    <span>all</span>
                 </div>
-            </div>
-
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('forms')">
-                    <span class="section-title">Forms</span>
-                    <span class="arrow">▶</span>
+                <div class="view-option" onclick="clearCanvas()">
+                    <span>clear</span>
                 </div>
-                <div class="section-content" id="forms">
-                    <div class="forms-grid" id="formsGrid"></div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('effects')">
-                    <span class="section-title">Effects</span>
-                    <span class="arrow">▶</span>
-                </div>
-                <div class="section-content" id="effects">
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="blendEnabled">
-                            <span class="checkmark"></span>
-                            Blend Overlapping Shapes
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('content')">
-                    <span class="section-title">Content</span>
-                    <span class="arrow">▶</span>
-                </div>
-                <div class="section-content" id="content">
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="monthEnabled">
-                            <span class="checkmark"></span>
-                            Month
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <select id="monthSelect">
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Font Size</label>
-                        <div class="slider-container">
-                            <input type="range" id="monthFontSize" min="12" max="72" value="24">
-                            <span class="slider-value" id="monthFontValue">24</span>
-                        </div>
-                    </div>
-                    
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="yearEnabled">
-                            <span class="checkmark"></span>
-                            Year
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <select id="yearSelect">
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                            <option value="2029">2029</option>
-                            <option value="2030">2030</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Font Size</label>
-                        <div class="slider-container">
-                            <input type="range" id="yearFontSize" min="12" max="72" value="24">
-                            <span class="slider-value" id="yearFontValue">24</span>
-                        </div>
-                    </div>
-
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="customTextEnabled">
-                            <span class="checkmark"></span>
-                            Custom Text
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <input type="text" id="customText" placeholder="Enter text...">
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Font Size</label>
-                        <div class="slider-container">
-                            <input type="range" id="customFontSize" min="12" max="72" value="24">
-                            <span class="slider-value" id="customFontValue">24</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-header" onclick="toggleSection('number')">
-                    <span class="section-title">Number</span>
-                    <span class="arrow">▶</span>
-                </div>
-                <div class="section-content" id="number">
-                    <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="numberEnabled" checked>
-                            <span class="checkmark"></span>
-                            Show Day Number
-                        </label>
-                    </div>
+                <div class="view-option pdf-option" onclick="goToStep(3)">
+                    <span>→</span>
                 </div>
             </div>
         </div>
 
-        <div class="main-area">
-            <div class="header">
-                <h1>CAL-SR-01</h1>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="switchView('day')" title="Day View">◧</button>
-                    <button class="view-btn" onclick="switchView('grid')" title="Grid View">▦</button>
-                    <button class="view-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">◐</button>
-                </div>
-            </div>
-
-            <div class="canvas-container" id="dayView">
-                <div class="preview-area" id="previewArea">
-                    <canvas class="grid-overlay" id="gridCanvas"></canvas>
-                    <div class="day-number" id="dayNumber">1</div>
-                    <canvas class="shapes-canvas" id="shapesCanvas"></canvas>
-                </div>
-                
-                <div class="color-palette" id="colorPalette" style="display: none;">
-                    <div class="color-swatch" data-color="#000000" style="background: #000000;"></div>
-                    <div class="color-swatch" data-color="#ffffff" style="background: #ffffff;"></div>
-                    <div class="color-swatch" data-color="#ff0000" style="background: #ff0000;"></div>
-                    <div class="color-swatch" data-color="#00ff00" style="background: #00ff00;"></div>
-                    <div class="color-swatch" data-color="#0000ff" style="background: #0000ff;"></div>
-                    <div class="color-swatch" data-color="#ffff00" style="background: #ffff00;"></div>
-                    <div class="color-swatch" data-color="#ff00ff" style="background: #ff00ff;"></div>
-                    <div class="color-swatch" data-color="#00ffff" style="background: #00ffff;"></div>
-                </div>
-            </div>
-
-            <div class="grid-view" id="gridView"></div>
-
-            <div class="controls" id="dayControls">
-                <button class="export-btn" onclick="exportPDF()">Export PDF</button>
-                <div class="navigation">
-                    <button class="nav-btn" onclick="changeDay(-1)">←</button>
-                    <div class="current-day" id="currentDay">1</div>
-                    <button class="nav-btn" onclick="changeDay(1)">→</button>
-                </div>
-            </div>
+        <!-- Grid view for "all" -->
+        <div class="all-view-container" id="allViewContainer">
+            <div class="all-view-grid" id="allViewGrid"></div>
         </div>
     </div>
 
-    <div class="bottom-line"></div>
+    <!-- Step 3: Calendar selection and view -->
+    <div id="step3" class="step">
+        <div class="top-bar"></div>
+        <div class="output-grid-two" id="outputSelection">
+            <div class="output-option" onclick="selectOutput('calendar')">
+                <span>Calender</span>
+            </div>
+            <div class="output-option" onclick="selectOutput('clock')">
+                <span>Clock</span>
+            </div>
+        </div>
+        <div class="bottom-bar"></div>
+        <!-- Back button to Step 2 (only visible when selection is shown) -->
+        <button class="selection-back-button" id="selectionBackButton" onclick="goToStep(2)" style="display: none;">←</button>
+        
+        <!-- Clock view (hidden initially) -->
+        <div id="clockView" class="clock-view" style="display: none;">
+            <div class="clock-container">
+                <div class="clock-display" id="clockDisplay">
+                    <!-- Clock numbers will be rendered here -->
+                </div>
+            </div>
+            <button class="clock-invert-button" id="clockInvertButton" onclick="toggleClockInvert()"></button>
+            <button class="clock-back-button" onclick="goBackToSelection()">←</button>
+        </div>
+        
+        <!-- Calendar view (hidden initially) -->
+        <div id="calendarView" class="calendar-view" style="display: none;">
+            <div class="calendar-workspace">
+                <!-- Month selection sidebar -->
+                <div class="month-sidebar">
+                    <div class="month-option" onclick="selectMonth(0)">Jan</div>
+                    <div class="month-option" onclick="selectMonth(1)">Feb</div>
+                    <div class="month-option" onclick="selectMonth(2)">Mär</div>
+                    <div class="month-option" onclick="selectMonth(3)">Apr</div>
+                    <div class="month-option" onclick="selectMonth(4)">Mai</div>
+                    <div class="month-option" onclick="selectMonth(5)">Jun</div>
+                    <div class="month-option" onclick="selectMonth(6)">Jul</div>
+                    <div class="month-option" onclick="selectMonth(7)">Aug</div>
+                    <div class="month-option" onclick="selectMonth(8)">Sep</div>
+                    <div class="month-option" onclick="selectMonth(9)">Okt</div>
+                    <div class="month-option" onclick="selectMonth(10)">Nov</div>
+                    <div class="month-option" onclick="selectMonth(11)">Dez</div>
+                </div>
+                
+                <!-- Calendar pages grid -->
+                <div class="calendar-pages-container">
+                    <div class="calendar-pages-grid" id="calendarPagesGrid"></div>
+                </div>
+            </div>
+            
+                <!-- Back and PDF export buttons -->
+                <div class="calendar-buttons">
+                    <button class="calendar-back-button" onclick="goBackToSelection()">←</button>
+                    <button class="pdf-export-calendar-button" onclick="exportCalendarPDF()">pdf</button>
+                </div>
+        </div>
+    </div>
+        <div class="workspace">
+            <!-- Drill button (top left corner) -->
+            <button class="drill-button" id="drillButton">
+                <span class="drill-text">drill</span>
+            </button>
+
+            <!-- Center canvas area -->
+            <div class="canvas-area">
+                <button class="nav-arrow nav-arrow-left" onclick="changeDay(-1)">‹</button>
+                <div class="canvas-wrapper">
+                    <div class="preview-canvas" id="previewCanvas">
+                        <canvas id="mainCanvas"></canvas>
+                        <svg id="stonesSvg" class="stones-svg"></svg>
+                        <div class="canvas-label year">2026</div>
+                        <div class="canvas-label month">01</div>
+                    </div>
+                </div>
+                <button class="nav-arrow nav-arrow-right" onclick="changeDay(1)">›</button>
+            </div>
+
+            <!-- Shape selection sidebar -->
+            <div class="shape-sidebar">
+                <div class="shape-option active" id="shapeStone" onclick="selectShape('stone')">
+                    <span>Stone</span>
+                </div>
+                <div class="shape-option" id="shapeBrick" onclick="selectShape('brick')">
+                    <span>Brick</span>
+                </div>
+                <div class="shape-option" id="shapeConcrete" onclick="selectShape('concrete')">
+                    <span>Concrete</span>
+                </div>
+                <div class="shape-option" id="shapeMat4" onclick="selectShape('mat4')">
+                    <span>Mat4</span>
+                </div>
+            </div>
+
+            <!-- Right sidebar with view options -->
+            <div class="view-sidebar">
+                <div class="view-option" id="oneView" onclick="switchView('one')">
+                    <span>one</span>
+                </div>
+                <div class="view-divider"></div>
+                <div class="view-option" id="allView" onclick="switchView('all')">
+                    <span>all</span>
+                </div>
+                <div class="view-option" onclick="clearCanvas()">
+                    <span>clear</span>
+                </div>
+                <div class="view-option pdf-option" onclick="exportPDF()">
+                    <span>pdf</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid view for "all" -->
+        <div class="all-view-container" id="allViewContainer">
+            <div class="all-view-grid" id="allViewGrid"></div>
+        </div>
+
+    </div>
 
     <script src="script.js"></script>
 </body>
